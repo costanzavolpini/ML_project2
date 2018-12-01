@@ -17,10 +17,10 @@ def main():
     for fn in ['train_pos_small.txt', 'train_neg_small.txt']:
         with open(fn) as f:
             for line in f:
-                print("line: ", line)
+                #print("line: ", line)
                 tokens = [vocab.get(t, -1) for t in line.strip().split()] # index in vocab of a certain element in the line. Smaller index = higher occurrence
                 tokens = [t for t in tokens if t >= 0]
-                print("tokens: ", tokens)
+                #print("tokens: ", tokens)
                 for t in tokens:
                     for t2 in tokens:
                         data.append(1)
@@ -31,7 +31,7 @@ def main():
                     print(counter)
                 counter += 1
                 
-    print("data: ", len(data))
+    print("data len: ", len(data))
     print("row: ", len(row))
     print("col: ", len(col))
     cooc = coo_matrix((data, (row, col)))
