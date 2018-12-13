@@ -79,10 +79,12 @@ def applyCorpus(tweet):
 # remove <user>, <url>, punctuation..etc.
 def cleanTweet(tweet):
     splitted_tweet = tweet.split(' ')
-    for (i, word) in splitted_tweet:
+    for (i, word) in enumerate(splitted_tweet):
         if re.match(r"#[A-Za-z0-9]+", word):
             word = re.sub('#|_|-', " ", word)
             splitted_tweet[i] = word
+            
+    tweet = ' '.join(splitted_tweet)
     
     tweet = re.sub('<url>','',tweet)
     tweet = re.sub('<user>','',tweet)
@@ -105,14 +107,15 @@ def cleanTweet(tweet):
     tweet = re.sub(r'#', ' ', tweet) #hashtag
 #     tweet = re.sub(r'[' + punctuation.replace('@', '') + ']+', ' ', tweet) # puntuaction
     
-    tweet = re.sub(r'\s\s+', ' ', tweet)
     tweet = tweet.strip(' ')
+    tweet = re.sub(r'\s\s+', ' ', tweet)
     tweet = ''.join(c for c in tweet if c <= '\uFFFF')
-    return tweet
+    return tweet.lower()
 
 
 def applyPreProcessing(text):
+    
+    text = cleanTweet(text)
     text = remove_repetitions(text)
     text = applyCorpus(text)
-    text = cleanTweet(text)
     return text
