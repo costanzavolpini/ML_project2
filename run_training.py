@@ -16,30 +16,15 @@ batch_size = 64
 
 model_path = './data/model_twitter.dat'
 log_dir = './logs'
-grid_search = True
+grid_search = False
 
-
-parser = argparse.ArgumentParser(
-        description='Build model.')
-parser.add_argument('--dataset',
-                    help='Choose a dataset: twitter, imdb, spam',
-                    default='twitter')
 
 
 if __name__ == '__main__':
-    args = parser.parse_args()
-    if args.dataset == 'twitter':
-        model_path = './data/model_twitter.dat'
-        (X_train, y_train, X_test, y_test), _ = load_data('twitter_gender_data')
-    elif args.dataset == 'imdb':
-        model_path = './data/model_imdb.dat'
-        (X_train, y_train, X_test, y_test), _ = load_data('imdb_review_data')
-    elif args.dataset == 'spam':
-        model_path = './data/model_imdb.dat'
-        (X_train, y_train, X_test, y_test), _ = load_data('email_spam_data')
-    else: 
-        print('Choose a dataset: twitter, imdb, spam')
-        sys.exit()
+    
+    # Load data
+    model_path = './data/model_twitter.dat'
+    (X_train, y_train, X_test, y_test), _ = load_data('twitter_data_small')
 
 
     # Take a look at the shapes
@@ -52,12 +37,7 @@ if __name__ == '__main__':
         tb_callback = keras.callbacks.TensorBoard(
                 log_dir=log_dir, histogram_freq=0, write_graph=True)
 
-        if args.dataset == 'twitter':
-            model = build_model_twitter()
-        if args.dataset == 'imdb':
-            model = build_model_imdb()
-        if args.dataset == 'spam':
-            model = build_model_spam()
+        model = build_model_twitter()
         model.fit(X_train, y_train,
                   validation_data=(X_test, y_test),
                   batch_size=batch_size, epochs=epochs,
@@ -68,7 +48,7 @@ if __name__ == '__main__':
 
     else:
         # Grid search with cross-validaton on training data set
-        keras_model = KerasClassifier(build_fn=build_model, verbose=0)
+        keras_model = KerasClassifier(build_fn=build_model_twitter, verbose=0)
         param_grid = {
             'kernel_size': [2, 3],
             'regularization': [0.01, 0.1, 0.2],

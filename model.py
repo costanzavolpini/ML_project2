@@ -6,6 +6,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.layers import Flatten, Conv1D, MaxPooling1D, GlobalAveragePooling1D, LSTM, merge
 from keras.layers.embeddings import Embedding
+from keras.layers.normalization import BatchNormalization
 from keras.constraints import maxnorm
 from keras.regularizers import l2
 from keras import backend as K
@@ -25,7 +26,7 @@ print('Preparing embeddings...')
 embeddings = get_embeddings(vocab_nlp.vocab)
 
 
-def build_model_twitter(max_length=1000,
+def build_model_twitter(max_length=100,
                 nb_filters=64,
                 kernel_size=3,
                 pool_size=2,
@@ -69,9 +70,7 @@ def build_model_twitter(max_length=1000,
 
     return model
 
-
-
-def build_model_imdb(max_length=2000,
+def build_model_twitter2(max_length=100,
                 nb_filters=64,
                 kernel_size=3,
                 pool_size=2,
@@ -91,19 +90,15 @@ def build_model_imdb(max_length=2000,
         weights=[embeddings]))
 
     model.add(Conv1D(nb_filters, kernel_size, activation='relu'))
-    model.add(Conv1D(nb_filters, kernel_size, activation='relu'))
-    #model.add(Conv1D(nb_filters, kernel_size, padding='same', activation='relu'))
-    #model.add(Conv1D(nb_filters, kernel_size, padding='same', activation='relu'))
     model.add(MaxPooling1D(pool_size))
-
     model.add(Dropout(dropout_prob))
 
     model.add(Conv1D(nb_filters * 2, kernel_size, activation='relu'))
-    model.add(Conv1D(nb_filters * 2, kernel_size, activation='relu'))
-    #model.add(Conv1D(nb_filters * 2, kernel_size, padding='same', activation='relu'))
-    #model.add(Conv1D(nb_filters * 2, kernel_size, padding='same', activation='relu'))
     model.add(MaxPooling1D(pool_size))
-
+    model.add(Dropout(dropout_prob))
+    
+    model.add(Conv1D(nb_filters * 4, kernel_size, activation='relu'))
+    model.add(MaxPooling1D(pool_size))
     model.add(Dropout(dropout_prob))
 
     model.add(GlobalAveragePooling1D())
@@ -119,3 +114,52 @@ def build_model_imdb(max_length=2000,
 
     return model
 
+def build_model_twitter3(max_length=100,
+                nb_filters=64,
+                kernel_size=3,
+                pool_size=2,
+                regularization=0.01,
+                weight_constraint=2.,
+                dropout_prob=0.4,
+                clear_session=True):
+    if clear_session:
+        K.clear_session()
+
+    model = Sequential()
+    model.add(Embedding(
+        embeddings.shape[0],
+        embeddings.shape[1],
+        input_length=max_length,
+        trainable=False,
+        weights=[embeddings]))
+
+    model.add(Conv1D(nb_filters, kernel_size))
+    #model.add(BatchNormalization())
+    model.add(MaxPooling1D(pool_size))
+    model.add(Activation('relu'))
+    model.add(Dropout(dropout_prob))
+
+    model.add(Conv1D(nb_filters * 2, kernel_size))
+    #model.add(BatchNormalization())
+    model.add(MaxPooling1D(pool_size))
+    model.add(Activation('relu'))
+    model.add(Dropout(dropout_prob))
+   
+    model.add(Conv1D(nb_filters * 4, kernel_size))
+    #model.add(BatchNormalization())
+    model.add(MaxPooling1D(pool_size))
+    model.add(Activation('relu'))
+    model.add(Dropout(dropout_prob))
+
+    model.add(GlobalAveragePooling1D())
+    model.add(Dense(1,
+        kernel_regularizer=l2(regularization),
+        kernel_constraint=maxnorm(weight_constraint),
+        activation='sigmoid'))
+
+    model.compile(
+        loss='binary_crossentropy',
+        optimizer='rmsprop',
+        metrics=['accuracy'])
+
+    return model

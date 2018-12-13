@@ -43,90 +43,49 @@ def load_twitter_data_small(from_cache=False):
     max_length = 1000
 
     print('Loading and preparing data...')
-    raw_data_neg = pd.read_csv(twitter_data_neg_small, encoding='latin1')
-    raw_data_pos = pd.read_csv(twitter_data_pos_small, encoding='latin1')
+    raw_data_neg = pd.read_csv(twitter_data_neg_small, header=None, sep="\n", encoding='latin1', names=['text'],
+                               error_bad_lines=False, warn_bad_lines=False).drop_duplicates()
+    raw_data_neg['label'] = 0
+    raw_data_neg = raw_data_neg
 
-#     raw_data['text'] = raw_data['text'].apply(str)
-#     raw_data['description'] = raw_data['description'].apply(str)
+    raw_data_pos = pd.read_csv(twitter_data_pos_small, header=None, sep="\n", encoding='latin1', names=['text'],
+                               error_bad_lines=False, warn_bad_lines=False).drop_duplicates()
+    raw_data_pos['label'] = 1
+    raw_data_pos = raw_data_pos
+    
+    raw_data = pd.concat([raw_data_neg, raw_data_pos], ignore_index=True)
+    
+    #print(raw_data)
 
-#     # Leave only those rows with 100% confidence,
-#     # and throw away 'brand' and 'unknown' labels
-#     raw_data = raw_data[raw_data['gender:confidence'] == 1]
-#     raw_data = raw_data[raw_data['gender'].apply(
-#             lambda val: val in ['male', 'female'])]
-#     print('Raw data with 100% confidence:', raw_data.shape)
-
-#     raw_data['combined_text'] = raw_data.apply(
-#             lambda row: ' | '.join([row['text'], row['description']]), axis=1)
-
-#     # Parse tweet texts
-#     docs = list(nlp.pipe(raw_data['combined_text'], batch_size=5000, n_threads=2))
-
-#     # Encode labels
-#     label_encoder = LabelEncoder()
-#     label_encoder.fit(raw_data['gender'])
-#     y = label_encoder.transform(raw_data['gender'])
-
-#     # Pull the raw_data into vectors
-#     X = extract_features(docs, max_length=max_length)
-
-#     # Split into train and test sets
-#     rs = ShuffleSplit(n_splits=2, random_state=42, test_size=0.2)
-#     train_indices, test_indices = next(rs.split(X))
-
-#     X_train = X[train_indices]
-#     y_train = y[train_indices]
-#     X_test = X[test_indices]
-#     y_test = y[test_indices]
-
-#     docs = np.array(docs, dtype=object)
-#     docs_train = docs[train_indices]
-#     docs_test = docs[test_indices]
-
-#     numeric_data = X_train, y_train, X_test, y_test
-#     raw_data = docs_train, docs_test, label_encoder
-
-#     with open(cached_data_path, 'wb') as f:
-#         pickle.dump((numeric_data, raw_data), f)
-
-#     return numeric_data, raw_data
-    return None, None
+    # Parse tweet texts
+    docs = list(nlp.pipe(raw_data['text'], batch_size=1000, n_threads=8))
+    #print(max([len(x) for x in docs])) //548
+    
+    y = raw_data['label'].values
+    
+    # Pull the raw_data into vectors
+    X = extract_features(docs, max_length=max_length)
+    
+    # Split into train and test sets
+    rs = ShuffleSplit(n_splits=2, random_state=42, test_size=0.2)
+    train_indices, test_indices = next(rs.split(X))
+    
+    X_train = X[train_indices]
+    y_train = y[train_indices]
+    X_test = X[test_indices]
+    y_test = y[test_indices]
+    
+    docs = np.array(docs, dtype=object)
+    docs_train = docs[train_indices]
+    docs_test = docs[test_indices]
+    
+    numeric_data = X_train, y_train, X_test, y_test
+    raw_data = docs_train, docs_test
+    
+    return numeric_data, raw_data
 
 def load_twitter_data_full(from_cache=False):
     return None, None
-
-
-# def load_imdb_review_data():
-#     max_length = 2000
-
-#     print('Loading and preparing data...')
-#     raw_data = pd.read_csv(raw_data_path_imdb_review, encoding='latin1')
-
-#     # Parse tweet texts
-#     docs = list(nlp.pipe(raw_data['text'], batch_size=5000, n_threads=8))
-
-#     y = raw_data['polarity'].values
-
-#     # Pull the raw_data into vectors
-#     X = extract_features(docs, max_length=max_length)
-
-#     # Split into train and test sets
-#     rs = ShuffleSplit(n_splits=2, random_state=42, test_size=0.2)
-#     train_indices, test_indices = next(rs.split(X))
-
-#     X_train = X[train_indices]
-#     y_train = y[train_indices]
-#     X_test = X[test_indices]
-#     y_test = y[test_indices]
-
-#     docs = np.array(docs, dtype=object)
-#     docs_train = docs[train_indices]
-#     docs_test = docs[test_indices]
-
-#     numeric_data = X_train, y_train, X_test, y_test
-#     raw_data = docs_train, docs_test, None
-
-#     return numeric_data, raw_data
 
 def load(data_name, *args, **kwargs):
     load_fn_map = {
