@@ -14,7 +14,8 @@ def main():
     data, row, col = [], [], []
     counter = 1
 
-    for fn in ['train_pos_small.txt', 'train_neg_small.txt']:
+    #for fn in ['train_pos_small.txt', 'train_neg_small.txt']:
+    for fn in ['train_pos_full.txt', 'train_neg_full.txt']:
         with open(fn) as f:
             for line in f:
                 #print("line: ", line)

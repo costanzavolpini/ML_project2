@@ -13,7 +13,8 @@ def main():
     
     print("cooc: ", cooc.shape)
 
-    nmax = 100
+    #nmax = 100
+    nmax = 130000
     print("using nmax =", nmax, ", cooc.max() =", cooc.max())
 
     print("initializing embeddings")
