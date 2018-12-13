@@ -22,14 +22,15 @@ from sklearn.externals import joblib
 #keras_model = KerasClassifier(build_fn=model, verbose=0)
 keras_model = KerasClassifier(build_fn=build_model2, verbose=0)
 param_grid = {
-    #'kernel_size': [2, 3],
     #'regularization': [0.01, 0.1, 0.2],
     #'weight_constraint': [1., 2., 3.],
     #'dropout_prob': [0.2, 0.4, 0.5, 0.6, 0.7],
-    'epochs': [2, 3, 5],
-    'batch_size': [64, 128, 160]
-    #'epochs': [1],
-    #'batch_size': [128]
+    #'epochs': [2, 3],
+    #'batch_size': [64, 128, 160]
+    'epochs': [2, 3],
+    'batch_size': [64, 128],
+    'kernel_size': [2, 3, 5],
+    'dropout_rate': [0, 0.2, 0.3, 0.5, 0.7]
 }
 
 grid = GridSearchCV(estimator=keras_model, param_grid=param_grid, verbose=11)
