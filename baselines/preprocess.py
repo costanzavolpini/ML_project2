@@ -1,7 +1,7 @@
 import re
 import enchant
 import itertools
-
+import sys
 
 """
 Below, we used three normalizazion dictionaries from those links :
