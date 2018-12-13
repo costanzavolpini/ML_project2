@@ -105,7 +105,6 @@ def cleanTweet(tweet):
     tweet = re.sub(r'\$\w*', '', tweet)
     tweet = tweet.lower()
     tweet = re.sub(r'#', ' ', tweet) #hashtag
-#     tweet = re.sub(r'[' + punctuation.replace('@', '') + ']+', ' ', tweet) # puntuaction
     
     tweet = tweet.strip(' ')
     tweet = re.sub(r'\s\s+', ' ', tweet)
