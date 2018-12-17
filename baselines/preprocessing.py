@@ -4,6 +4,7 @@ import string
 from string import punctuation
 import itertools
 import enchant
+from split_hashtags import *
 
 
 
@@ -80,9 +81,12 @@ def applyCorpus(tweet):
 def cleanTweet(tweet):
     splitted_tweet = tweet.split(' ')
     for (i, word) in enumerate(splitted_tweet):
+#         if word.startswith("#"):
+            
         if re.match(r"#[A-Za-z0-9]+", word):
-            word = re.sub('#|_|-', " ", word)
-            splitted_tweet[i] = word
+            splitted_tweet[i] = infer_spaces(word[1:])
+#             word = re.sub('#|_|-', " ", word)
+#             splitted_tweet[i] = word
             
     tweet = ' '.join(splitted_tweet)
     
