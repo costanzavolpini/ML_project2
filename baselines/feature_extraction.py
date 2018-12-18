@@ -1,30 +1,31 @@
 import sys
 
 
-from preprocess import clean
 from preprocessing import applyPreProcessing
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing import sequence
 import numpy as np
 import _pickle as cPickle
+from ngram import *
 
 
 # def train_test_features(full=True, n_gram=False, pretrained=True, nb_words=None):
-def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1):
+def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1, n_gram=-1):
     """
     Function that does the cleaning,the tokenization, add the n-grams, build the weight matrix(pretrained)
     depending on the arguments
     Arguments: pos_filename: the name of the file that contains the positive samples
                neg_filename: the name of the file that contains the negative samples 
-               pretrained (True to use the glove200 pretraining)
-               nb_words (None to take all the words otherwise takes an integer value N which will take the N most frequent words)
+               pretrained: defines whether the glove200 pretrained embedding should be used
+               nb_words: defines the number of words that (None to take all the words otherwise takes an integer value N which will take the N most frequent words)
+               n_gram: defines whether n-grams should be used ( anything below 2 means no n-gram is involved)
     Returns : train_sequences (List of list of word indexes for each tweet for the training)
               test_sequences (List of list of word indexes for each tweet for the test)
               labels (Labels)
               vocab_size (Maximum word index in the list of list train_sequences)
-              embedding_matrix (if pretrained=True returns the embedding_matrix builded by the help of glove)
-              This code was inspired from : https://github.com/fchollet/keras/blob/master/examples/imdb_fasttext.py
-              and from : https://github.com/fchollet/keras/blob/master/examples/pretrained_word_embeddings.py
+              embedding_matrix (if pretrained=True returns the embedding_matrix builded by the help of glove, None otherwise)
+              Inspired from keras examples: https://github.com/fchollet/keras/blob/master/examples/imdb_fasttext.py
+              and https://github.com/fchollet/keras/blob/master/examples/pretrained_word_embeddings.py
     """
     np.random.seed(0)
 
@@ -61,12 +62,10 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
     count = 0
     print('Processing of ' + str(test_size) + ' tweets for the testing set...')
     for tweet in testfile:
-#         tweet = tweet.decode('utf-8')
-        tweet = clean(tweet.decode('utf-8'))
-#         tweet = tweet[tweet.find(',')+1:]
+        tweet = tweet.decode('utf-8')
         tweet = ','.join(tweet.split(',')[1:])
-#         tweet = clean(tweet)
         tweet = applyPreProcessing(tweet)
+
         test_tweets.append(tweet)
         count = count + 1
         if count%1000 == 0:
@@ -88,6 +87,37 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
 
     
     maxlen = 30
+    #maxlen = 35
+    
+    if n_gram > 1:
+        maxlen = 60
+        ngram_range = n_gram
+        print('Adding {}-gram features'.format(ngram_range))
+        # Create set of unique n-gram from the training set.
+        ngram_set = set()
+        for input_list in train_sequences:
+            for i in range(2, ngram_range + 1):
+                set_of_ngram = create_ngram_set(input_list, ngram_value=i)
+                ngram_set.update(set_of_ngram)
+
+        # Dictionary mapping n-gram token to a unique integer.
+        # Integer values are greater than vocab_size in order
+        # to avoid collision with existing features.
+        start_index = vocab_size + 1
+        token_indice = {v: k + start_index for k, v in enumerate(ngram_set)}
+        indice_token = {token_indice[k]: k for k in token_indice}
+
+        # vocab_size is the highest integer that could be found in the dataset.
+        vocab_size = np.max(list(indice_token.keys())) + 1
+
+        # Augmenting X_train and X_test with n-grams features
+        train_sequences = add_ngram(train_sequences, token_indice, ngram_range)
+        test_sequences = add_ngram(test_sequences, token_indice, ngram_range)
+        print('Average train sequence length: {}'.format(np.mean(list(map(len, train_sequences)), dtype=int)))
+        print('Average test sequence length: {}'.format(np.mean(list(map(len, test_sequences)), dtype=int)))
+    
+    
+    
     print('Pad sequences')
     train_sequences = sequence.pad_sequences(train_sequences, maxlen=maxlen)
     test_sequences = sequence.pad_sequences(test_sequences, maxlen=maxlen)
@@ -106,7 +136,8 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
 
     if pretrained:
 
-        EMBEDDING_DIM = 200
+        EMBEDDING_DIM = 200 # glove vectors have dimension = 200
+
         # first, build index mapping words in the embeddings set
         # to their embedding vector
         print('Indexing word vectors (from glove.twitter.27B.200d.txt)')
@@ -134,7 +165,7 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
 
     return train_sequences, labels, test_sequences, vocab_size, embedding_matrix
 
-def save(pos_filename, neg_filename, pretrained, nb_words, output):
-    trains, labels, tests, vocab, embedding = train_test_features(pos_filename, neg_filename, pretrained, nb_words)
+def save(pos_filename, neg_filename, pretrained, nb_words, n_gram, output):
+    trains, labels, tests, vocab, embedding = train_test_features(pos_filename, neg_filename, pretrained, nb_words, n_gram)
     cPickle.dump([trains, labels, tests, vocab, embedding],open(output, 'wb'))
     return
