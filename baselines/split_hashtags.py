@@ -1,3 +1,7 @@
+"""
+Got inspired from: https://stackoverflow.com/questions/8870261/how-to-split-text-without-spaces-into-list-of-words/11642687#11642687
+"""
+
 from math import log
 
 # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).

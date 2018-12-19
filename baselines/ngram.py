@@ -1,3 +1,5 @@
+# n-gram support functions. Taken from: https://github.com/keras-team/keras/blob/master/examples/imdb_fasttext.py
+
 def create_ngram_set(input_list, ngram_value=2):
     """
     Extract a set of n-grams from a list of integers.

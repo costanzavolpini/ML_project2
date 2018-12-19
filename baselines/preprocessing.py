@@ -27,9 +27,9 @@ from split_hashtags import *
 d = enchant.Dict('en_US')
 final_corpus = {}
 
-def remove_repetitions(tweet):
+def fix_repetitions_typos(tweet):
     """
-    Functions that remove noisy character repetition like for instance :
+    Removes noisy character repetitions, like:
     llloooooooovvvvvve ====> love
     This function reduce the number of character repetition to 2 and checks if the word belong the english
     vocabulary by use of pyEnchant and reduce the number of character repetition to 1 otherwise
@@ -113,8 +113,10 @@ def cleanTweet(tweet):
 
 
 def applyPreProcessing(text):
-    
+    """
+    This function applies different kinds of preprocessing to each tweet
+    """
     text = cleanTweet(text)
-    text = remove_repetitions(text)
+    text = fix_repetitions_typos(text)
     text = applyCorpus(text)
     return text

@@ -9,7 +9,6 @@ import _pickle as cPickle
 from ngram import *
 
 
-# def train_test_features(full=True, n_gram=False, pretrained=True, nb_words=None):
 def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1, n_gram=-1):
     """
     Function that does the cleaning,the tokenization, add the n-grams, build the weight matrix(pretrained)
@@ -19,11 +18,11 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
                pretrained: defines whether the glove200 pretrained embedding should be used
                nb_words: defines the number of words that (None to take all the words otherwise takes an integer value N which will take the N most frequent words)
                n_gram: defines whether n-grams should be used ( anything below 2 means no n-gram is involved)
-    Returns : train_sequences (List of list of word indexes for each tweet for the training)
-              test_sequences (List of list of word indexes for each tweet for the test)
-              labels (Labels)
-              vocab_size (Maximum word index in the list of list train_sequences)
-              embedding_matrix (if pretrained=True returns the embedding_matrix builded by the help of glove, None otherwise)
+    Returns : train_sequences: a padded 2D array that contains the word indices for each tweet of the training set (1 row = 1 tweet)
+              test_sequences: a padded 2D array that contains the word indices for each tweet of the test set
+              labels: train labels
+              vocab_size: Maximum word index in the list of list train_sequences
+              embedding_matrix: if pretrained=True returns the embedding_matrix builded by the help of glove, None otherwise
               Inspired from keras examples: https://github.com/fchollet/keras/blob/master/examples/imdb_fasttext.py
               and https://github.com/fchollet/keras/blob/master/examples/pretrained_word_embeddings.py
     """
@@ -40,10 +39,7 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
     count = 0
 
     print('Processing of ' + str(train_size) + ' tweets for the training set...')
-#     for tweet in posfile:
     for tweet in posfile.readlines() + negfile.readlines():
-#         tweet = tweet.decode('utf-8')
-#         tweet = clean(tweet.decode('utf-8'))
         tweet = applyPreProcessing(tweet.decode('utf-8'))
         train_tweets.append(tweet)
         count = count + 1
@@ -87,7 +83,6 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
 
     
     maxlen = 30
-    #maxlen = 35
     
     if n_gram > 1:
         maxlen = 60
@@ -126,7 +121,7 @@ def train_test_features(pos_filename, neg_filename, pretrained=True, nb_words=-1
 
     labels = np.array(int(train_size/2) * [0] + int(train_size/2) * [1])
 
-    print('Shuffling of the training set...')
+    print('Shuffling the training set...')
     indices = np.arange(train_sequences.shape[0])
     np.random.shuffle(indices)
     train_sequences = train_sequences[indices]

@@ -69,9 +69,11 @@ def build_model2(input_dim=96339, output_dim=200, input_length=30, kernel_size=5
 
 #def build_model3(input_dim=96339, output_dim=200, input_length=30, kernel_size=5, dropout_rate=0.5, units):
 #def build_model3(input_dim=92891, output_dim=200, input_length=30, kernel_size=5, dropout_W=0, dropout_U=0, units=100, filters=32):
-def build_model3(X_train, W, kernel_size=5, dropout_W=0, dropout_U=0, units=100, filters=32, pool_size=2):
-    input_dim = W.shape[0]
-    output_dim = W.shape[1]
+def build_model3(X_train, W, kernel_size=5, dropout_W=0, dropout_U=0, units=100, filters=32, pool_size=2, input_dim=0, output_dim=0):
+    if W is not None:
+        input_dim = W.shape[0]
+        output_dim = W.shape[1]
+
     input_length = X_train.shape[1]
 
     embeddings = W
@@ -101,9 +103,11 @@ def build_model3(X_train, W, kernel_size=5, dropout_W=0, dropout_U=0, units=100,
     return model
 
 
-def build_model4(X_train, W, kernel_size=5, dropout_W=0, dropout_U=0, units=100, filters=32):
-    input_dim = W.shape[0]
-    output_dim = W.shape[1]
+def build_model4(X_train, W, kernel_size=5, dropout_W=0, dropout_U=0, units=100, filters=32, input_dim=0, output_dim=0):
+    if W is not None:
+        input_dim = W.shape[0]
+        output_dim = W.shape[1]
+
     input_length = X_train.shape[1]
 
     embeddings = W
@@ -149,9 +153,11 @@ def build_model4(X_train, W, kernel_size=5, dropout_W=0, dropout_U=0, units=100,
 
 
 # like model3, but with batch normalization
-def build_model5(X_train, W, kernel_size=5, dropout_W=0.2, dropout_U=0.2, units=100, filters=32):
-    input_dim = W.shape[0]
-    output_dim = W.shape[1]
+def build_model5(X_train, W, kernel_size=5, dropout_W=0.2, dropout_U=0.2, units=100, filters=32, input_dim=0, output_dim=0):
+    if W is not None:
+        input_dim = W.shape[0]
+        output_dim = W.shape[1]
+
     input_length = X_train.shape[1]
 
     embeddings = W
